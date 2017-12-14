@@ -2,10 +2,8 @@ import operator
 from Tkinter import *
 
 def rpn_method(rpn_string):
-    # use a char operator symbal to do an operator method by passing the two value
+    # use a char operator symbol to do an operator method by passing the two value
     ops_list = { "+": operator.add,"-": operator.sub,"*": operator.mul,"/": operator.div}
-
-    #  this holds the test value for running this method
 
     rpn_list = rpn_string.split(".")
 
@@ -16,7 +14,7 @@ def rpn_method(rpn_string):
     # cycle through all of the value in rpn_list and either add them to the stack or do the operator method
     for value in rpn_list:
         if value in ops_list:
-            # top value is alway the second value only important for subtract and divide
+            # top value is always the second value only important for subtract and divide
             val2 = rpn_stack.pop()
             val1 = rpn_stack.pop()
             sum_val = ops_list[value](val1,val2)
@@ -30,9 +28,40 @@ def rpn_method(rpn_string):
 class RPN_GUI(Frame):
 
     ops_char_list = ["+", "-","*","/"]
+    # could have made this into a dictionary
+    all_key_list = ["plus","minus","asterisk","slash","Return","equal","BackSpace","Delete","space"]
+    # don't want to type 0 through 9 like had to with the words above and its easier to read
+    for numName in range(10):
+        all_key_list.append(str(numName))
+
+    # need to pass the char value of + - * / not the string plus minus, etc to the RPNDisplay
+    def keyInput(self,event):
+        key_str = event.keysym
+        if key_str == "plus":
+            key_str = "+"
+        elif key_str == "minus":
+            key_str = "-"
+        elif key_str == "asterisk":
+            key_str = "*"
+        elif key_str == "slash":
+            key_str = "/"
+        # using the period char and not the space char to separate the math char for easier viewing
+        elif key_str == "space":
+            key_str = "."
+
+        # check for the types of key being used and final pass the key_str to the RPNDisplay
+        if key_str == "Return" or key_str == "equal":
+            self.equalPress()
+        elif key_str == "BackSpace":
+            self.backSpace()
+        elif key_str == "Delete":
+            self.clearScreen()
+        else:
+            self.buttonValue(key_str)
 
     def buttonValue(self,value):
         if value in RPN_GUI.ops_char_list:
+            #all operators will have a space before them since you can do 123 but not +-* need .+.-.*
             self.RPNDisplay["text"] += "." + value
         else:
             self.RPNDisplay["text"] += value
@@ -140,12 +169,19 @@ class RPN_GUI(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master, width=305, height=400, bg="dim grey")
         self.master.minsize(width=305,height=400)
-
+        # set where x and y beings in the frame. Which is the top left corner for 0,0
         self.place(x=0, y=0)
         self.createWidgets()
 
 root =Tk()
 app = RPN_GUI(master=root)
 app.master.title("RPN Calculator")
+
+#bind the all_key_list to keyboard inputs
+for key_list in app.all_key_list:
+    key_value = "<Key-" + key_list + ">"
+    # need to bind here so the entire active frame is the focus to catches the keyboard input.
+    # has not worked to bind the frame in the class
+    app.master.bind(key_value,app.keyInput)
 app.mainloop()
 root.destroy()
